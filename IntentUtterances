@@ -1,0 +1,94 @@
+NextAirDate when does {one|Show} air next
+NextAirDate when does {one two|Show} air next
+NextAirDate when does {the two three|Show} air next
+NextAirDate when does {one two three four|Show} air next
+NextAirDate when does {one two three four five|Show} air next
+NextAirDate when does {one two three four five six|Show} air next
+NextAirDate when does {one two three four five six seven|Show} air next
+NextAirDate when does {one two three four five six seven eigth|Show} air next
+NextAirDate when does {one two three four five six seven eight nine|Show} air next
+NextAirDate when does {one two three four five six seven eight nine ten|Show} air next
+
+
+
+NextAirDate when is {one|Show} on
+NextAirDate when is {one two|Show} on
+NextAirDate when is {one two three|Show} on
+NextAirDate when is {one two three four|Show} on
+NextAirDate when is {one two three four five|Show} on
+NextAirDate when is {one two three four five six|Show} on
+NextAirDate when is {one two three four five six seven|Show} on
+NextAirDate when is {one two three four five six seven eigth|Show} on
+NextAirDate when is {one two three four five six seven eight nine|Show} on
+NextAirDate when is {one two three four five six seven eight nine ten|Show} on
+
+
+NextAirDate when is the new {one|Show} episode
+NextAirDate when is the new {one two|Show} episode
+NextAirDate when is the new {one two three|Show} episode
+NextAirDate when is the new {one two three four|Show} episode
+NextAirDate when is the new {one two three four five|Show} episode
+NextAirDate when is the new {one two three four five six|Show} episode
+NextAirDate when is the new {one two three four five six seven|Show} episode
+NextAirDate when is the new {one two three four five six seven eigth|Show} episode
+NextAirDate when is the new {one two three four five six seven eight nine|Show} episode
+NextAirDate when is the new {one two three four five six seven eight nine ten|Show} episode
+
+NextAirDate when is the new episode of {one|Show}
+NextAirDate when is the new episode of {one two|Show}
+NextAirDate when is the new episode of {one two three|Show}
+NextAirDate when is the new episode of {one two three four|Show}
+NextAirDate when is the new episode of {one two three four five|Show}
+NextAirDate when is the new episode of {one two three four five six|Show}
+NextAirDate when is the new episode of {one two three four five six seven|Show}
+NextAirDate when is the new episode of {one two three four five six seven eigth|Show}
+NextAirDate when is the new episode of {one two three four five six seven eight nine|Show}
+NextAirDate when is the new episode of {one two three four five six seven eight nine ten|Show}
+
+NextAirDate when is the next {one|Show}
+NextAirDate when is the next {one two|Show}
+NextAirDate when is the next {one two three|Show}
+NextAirDate when is the next {one two three four|Show}
+NextAirDate when is the next {one two three four five|Show}
+NextAirDate when is the next {one two three four five six|Show}
+NextAirDate when is the next {one two three four five six seven|Show}
+NextAirDate when is the next {one two three four five six seven eigth|Show}
+NextAirDate when is the next {one two three four five six seven eight nine|Show}
+NextAirDate when is the next {one two three four five six seven eight nine ten|Show}
+
+
+
+TvShowNetwork The tv show is on {FOX|network}
+TvShowNetwork it is on {FOX|network}
+TvShowNetwork {FOX|network}
+TvShowNetwork {A.M.C|network}
+TvShowNetwork {amc|network}
+
+
+
+
+
+{
+  "intents": [
+
+    {
+      "intent": "NextAirDate",
+      "slots": [
+        {
+          "name": "Show",
+          "type": "LITERAL"
+        }
+      ]
+    },
+        {
+      "intent": "TvShowNetwork",
+      "slots": [
+        {
+          "name": "network",
+          "type": "AMAZON.LITERAL"
+        }
+
+      ]
+    }
+  ]
+}
