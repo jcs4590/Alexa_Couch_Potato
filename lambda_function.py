@@ -78,6 +78,8 @@ def on_intent(intent_request, session):
         return search_network(intent, session)
     elif intent_name == "ShowsOnDate":
         return get_shows_for_date(intent, session)
+    elif intent_name == "FilterAllSHows":
+        return filter_shows(intent, session)
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
     else:
@@ -107,6 +109,39 @@ def add_sml_tag(text):
 ### MEthod gets called when multiple shows found#####
 ## TRYing to filter by network #####
 
+def filter_shows(intent, session):
+    session_attributes = {}
+    reprompt_text = None
+
+    # if "favoriteColor" in session.get('attributes', {}):
+    if "Filter" in intent["slots"] and "value" in intent["slots"]["Filter"]["value"]:
+        print("network in intents slots : {}".format(intent["slots"]))
+        filter_text = intent["slots"]["Filter"]["value"]
+        print(json.loads(session['attributes']['shows']))
+
+        ##get shows from session
+        if "shows" in session.get("attributes", {}):
+            shows = HttpHelper.HttpHelper().get_shows_objects_from_session(
+                json.loads(session['attributes']["shows"]))  ##show objects
+            print("LAkers!! {}".format(filter_text))
+
+            speech_output = "<p>Shows only on {}</p> are {}" .format(filter_text,
+                                                          get_list_for_shows_text(shows, 15, filter=filter_text))
+
+        else:
+            speech_output = "Having session issues. Sorry!"
+        should_end_session = True
+    else:
+        speech_output = "I wasn't able to understand what network that was. You can " \
+                        "Tell me which network by saying. The tv show is on FOX."
+        reprompt_text = "Tell me which network by saying. The tv show is on FOX."
+        should_end_session = False
+
+    # Setting reprompt_text to None signifies that we do not want to reprompt
+    # the user. If the user does not respond or says something that is not
+    # understood, the session will end.
+    return build_response(session_attributes, build_speechlet_response(
+            intent['name'], add_sml_tag(speech_output), reprompt_text, should_end_session))
 
 def search_network(intent, session):
     session_attributes = {}
@@ -182,7 +217,6 @@ def get_tv_show(intent, session):
         request_helper = HttpHelper.HttpHelper()
         request_helper.add_urls([Enums.API_URLS["show_search"].format(tv_show)])
         request_helper.start_minions(request_helper.get_tv_shows)
-        print(tv_show)
         shows = request_helper.shows
         show_count = len(shows)
 
@@ -258,21 +292,21 @@ def get_shows_for_date(intent, session):
                         "What shows or on December 10, 2015? or saying What shows are on Today?"
         speech_output = text
         reprompt_text = text
-    print(speech_output)
     return build_response(session_attributes, build_speechlet_response(
             card_title, add_sml_tag(speech_output), reprompt_text, should_end_session))
 
 
-def get_list_for_shows_text(shows, char_count, filter = None):
+def get_list_for_shows_text(shows, char_count, filter_text=None):
 
-    if filter is not None:
-        shows = filter(lambda x: x.network["name"] == filter, shows)
+    if filter_text is not None:
+        shows = filter(lambda x: x.network["name"] == filter_text, shows)
+    if len(shows) == 0:
+        return "<p>Did not find any shows for that netowrk. Sorry</p>"
 
     prev_time = shows[0].get_current_episode_time()
     text = "<p>Shows starting at {}</p>".format(prev_time)
     char_count += len(text)
     for index, show in enumerate(shows):
-        print("{}: {}".format(char_count, show.name))
         if char_count > 6000:
             last_index = index
             break

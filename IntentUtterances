@@ -91,12 +91,22 @@ TvShowNetwork {amc|network}
         }
       ]
     },
-        {
+    {
       "intent": "TvShowNetwork",
       "slots": [
         {
           "name": "network",
           "type": "AMAZON.LITERAL"
+        }
+
+      ]
+    },
+     {
+      "intent": "ShowsOnDate",
+      "slots": [
+        {
+          "name": "ShowForDate",
+          "type": "AMAZON.DATE"
         }
 
       ]
