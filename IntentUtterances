@@ -58,6 +58,17 @@ NextAirDate when is the next {one two three four five six seven eight nine ten|S
 
 
 
+ShowsOnDate what shows are on {ShowForDate}
+ShowsOnDate what is playing  {ShowForDate}
+ShowsOnDate what is playing on {ShowForDate}
+ShowsOnDate what shows are playing {ShowForDate}
+ShowsOnDate what shows are playing on {ShowForDate}
+ShowsOnDate what show are available {ShowForDate}
+ShowsOnDate what show are available on {ShowForDate}
+
+
+
+
 TvShowNetwork The tv show is on {FOX|network}
 TvShowNetwork it is on {FOX|network}
 TvShowNetwork {FOX|network}

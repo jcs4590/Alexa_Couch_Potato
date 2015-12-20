@@ -8,54 +8,11 @@ http://amzn.to/1LGWsLG
 """
 
 from __future__ import print_function
-from HttpHelper import HttpHelper, TvShow
+import HttpHelper
+import TvShow
 import json, re
-API_URLS = {"show_search":"http://api.tvmaze.com/search/shows?q={}"}
+import Enums
 
-SHOWS_WITH_NUMBERS = \
-    {
-        "the hundred": "The 100",
-        "two broke girls": "2 Broke Girls",
-        "hundred deeds for eddie mcdowd": "100 Deeds for Eddie McDowd",
-        "hundred questions": "100 Questions",
-        "hundred Winners": "100 Winners",
-        "a thousand ways to die": "1000 Ways to Die",
-        "ten things i hate about you": "10 Things I Hate About You",
-        "one hundred one ways to leave a gameshow": "101 Ways to Leave a Gameshow",
-        "twelve ounce mouse": "12 oz. Mouse",
-        "fifteen love": "15/Love",
-        "ten eight officers on duty": "10-8: Officers on Duty",
-        "sixteen and pregnant": "16 and Pregnant",
-        "eighteen to life": "18 to Life",
-        "one hundred one dalmatians": "101 Dalmatians",
-        "two d tv": "2DTV",
-        "the twentieth century": "The 20th Century",
-        "twenty one jump street": "21 Jump Street",
-        "two hundred twenty seven": "227",
-        "twenty four": "24",
-        "twenty six men": "26 Men",
-        "three pounds": "3 lbs",
-        "three south": "3 South",
-        "thirty rock": "30 Rock",
-        "thirty seconds to fame": "30 Seconds to Fame",
-        "thirty minutes": "31 Minutes",
-        "third rock from the sun": "3rd Rock from the Sun",
-        "the four thousand four hundred": "The 4400",
-        "forty eight hours": "48 Hours",
-        "fifty cent the money and the power": "50 Cent: The Money and the Power",
-        "fifty fifty": "50/50",
-        "sixty minutes": "60 Minutes",
-        "six teen": "6teen",
-        "the sixty four thousand dollar question": "The $64,000 Question",
-        "sixty four zoo lane": "64 Zoo Lane",
-        "six hundred sixty six park avenue": "666 Park Avenue",
-        "seventh heaven": "7th Heaven",
-        "seventy seven sunset strip": "77 Sunset Strip",
-        "eight simple rules": "8 Simple Rules",
-        "nine o two 1 o": "90210",
-        "nine to five": "9 to 5",
-        "marcos": "narcos"
-    }
 
 
 def lambda_handler(event, context):
@@ -119,6 +76,8 @@ def on_intent(intent_request, session):
         return get_tv_show(intent, session)
     elif intent_name == "TvShowNetwork":
         return search_network(intent, session)
+    elif intent_name == "ShowsOnDate":
+        return get_shows_for_date(intent, session)
     elif intent_name == "AMAZON.HelpIntent":
         return get_welcome_response()
     else:
@@ -137,101 +96,17 @@ def on_session_ended(session_ended_request, session):
 
 # --------------- Functions that control the skill's behavior ------------------
 
-
-def get_welcome_response():
-    """ If we wanted to initialize the session to have some attributes we could
-    add those here
-    """
-
-    session_attributes = {}
-    card_title = "Welcome"
-    speech_output = "Hello, I am couch potato. I can search for a show and tell you when it will air next. I can also " \
-                    "recommend similar shows. " \
-                    "and save your favorite shows and give you updates"
-    # If the user either does not reply to the welcome message or says something
-    # that is not understood, they will be prompted again with this text.
-    reprompt_text = "Please tell me your favorite color by saying, " \
-                    "my favorite color is red."
-    should_end_session = False
-    return build_response(session_attributes, build_speechlet_response(
-        card_title, speech_output, reprompt_text, should_end_session))
-
-
-def get_tv_show(intent, session):
-    """ Sets the color in the session and prepares the speech to reply to the
-    user.
-    """
-
-    card_title = intent['name']
-    session_attributes = {}
-    should_end_session = False
-    print(intent['slots'])
-    if 'Show' in intent['slots']:
-        ## get tv show name
-        tv_show = intent['slots']['Show']['value']
-
-        ## check if tv show is one that has numbers in it
-        if tv_show in SHOWS_WITH_NUMBERS:
-            tv_show = SHOWS_WITH_NUMBERS[tv_show]
-
-        ## get shows
-        request_helper = HttpHelper()
-        request_helper.add_urls(API_URLS["show_search"].format(tv_show))
-        print(tv_show)
-        shows = request_helper.shows
-        show_count = len(shows)
-
-        ##more than one show found
-        if show_count > 1:
-            session_attributes = add_shows_to_session(shows)
-            speech_output = "I found {} episodes matching the title {}. ".format(show_count, tv_show) + \
-                            "What network is the show on?"
-        ##one show found
-        elif show_count == 1:
-            show = shows[0]
-            speech_output = get_next_air_text(show)
-        ## no show found
-        else:
-            speech_output = "Sorry. I did not find any results"
-
-        reprompt_text = None
-    else:
-        speech_output = "I wasn't able to get that. You can tell me to search for a show by saying. " \
-                        "when does The Walking Dead air next?"
-        reprompt_text = "You can tell me to search for a show by saying. when does The Walking Dead air next?"
-    return build_response(session_attributes, build_speechlet_response(
-        card_title, speech_output, reprompt_text, should_end_session))
-
-
-def get_next_episode_date_text(show):
-    date = show.get_next_episode_date()
-    if date is None:
-        if show.status.lower() == "ended":
-            date = show.get_prev_episode_date()
-            if date is None:
-                speech_output = "The tv show {} is no longer running".format(show.name)
-            else:
-                speech_output = "The TV Show {} is no longer running. " \
-                                "It lasted {} seasons and The last " \
-                                "episode aired on {}".format(show.name,
-                                                             show.prev_episode["season"],
-                                                             date)
-        else:
-            speech_output = "I do not have a date for the next {} episode. but, I do know it" \
-                            " is still active.".format(show.name)
-        return speech_output
-    return "The new episode of {} will air on {} on {}".format(show.name, date, show.network["name"])
-
-
 def add_shows_to_session(shows):
-    #json.dumps(shows, default=lambda o: o.__dict__, sort_keys=True, indent=4)
-    return {"shows": shows}
+    return {"shows": json.dumps([ob.__dict__ for ob in shows])}
 
 
+def add_sml_tag(text):
+    return "<speak>" + text + "</speak>"
 
-
+############# intent handlers ##############################
 ### MEthod gets called when multiple shows found#####
 ## TRYing to filter by network #####
+
 
 def search_network(intent, session):
     session_attributes = {}
@@ -241,11 +116,12 @@ def search_network(intent, session):
     if "network" in intent["slots"]:
         print("network in intents slots : {}".format(intent["slots"]))
         network = intent["slots"]["network"]["value"]
-       # print(json.loads(session['attributes']['shows']))
+        print(json.loads(session['attributes']['shows']))
 
         ##get shows from session
         if "shows" in session.get("attributes", {}):
-            shows = HttpHelper.get_shows_objects(json.loads(session['attributes']['shows'])) ##show objects
+            shows = HttpHelper.HttpHelper().get_shows_objects_from_session(
+                json.loads(session['attributes']["shows"]))  ##show objects
             print("LAkers!! {}".format(network))
             for show in shows:
                 if network.decode('utf-8').replace(".", "").lower() in show.network["name"].lower():
@@ -267,17 +143,164 @@ def search_network(intent, session):
     # the user. If the user does not respond or says something that is not
     # understood, the session will end.
     return build_response(session_attributes, build_speechlet_response(
-        intent['name'], speech_output, reprompt_text, should_end_session))
+            intent['name'], add_sml_tag(speech_output), reprompt_text, should_end_session))
+def get_next_episode_date_text(show):
+    date = show.get_next_episode_date()
+    if date is None:
+        if show.status.lower() == "ended":
+            date = show.get_prev_episode_date()
+            if date is None:
+                speech_output = "The tv show {} is no longer running".format(show.name)
+            else:
+                speech_output = "The TV Show {} is no longer running. " \
+                                "It lasted {} seasons and The last " \
+                                "episode aired on {}".format(show.name,
+                                                             show.prev_episode["season"],
+                                                             date)
+        else:
+            speech_output = "I do not have a date for the next {} episode. but, I do know it" \
+                            " is still active.".format(show.name)
+        return speech_output
+    return "The new episode of {} will air on {} on {}".format(show.name, date, show.network["name"])
+def get_tv_show(intent, session):
+    """ get single tv show
+    """
+
+    card_title = intent['name']
+    session_attributes = {}
+    should_end_session = False
+    print(intent['slots'])
+    if 'Show' in intent['slots']:
+        ## get tv show name
+        tv_show = intent['slots']['Show']['value']
+
+        ## check if tv show is one that has numbers in it
+        if tv_show in Enums.SHOWS_WITH_NUMBERS:
+            tv_show = Enums.SHOWS_WITH_NUMBERS[tv_show]
+
+        ## get shows
+        request_helper = HttpHelper.HttpHelper()
+        request_helper.add_urls([Enums.API_URLS["show_search"].format(tv_show)])
+        request_helper.start_minions(request_helper.get_tv_shows)
+        print(tv_show)
+        shows = request_helper.shows
+        show_count = len(shows)
+
+        ##more than one show found
+        if show_count > 1:
+            session_attributes = add_shows_to_session(shows)
+            speech_output = "I found {} tv shows matching the title {}. ".format(show_count, tv_show) + \
+                            "What network is the show on?"
+        ##one show found
+        elif show_count == 1:
+            show = shows[0]
+            speech_output = get_next_episode_date_text(show)
+        ## no show found
+        else:
+            speech_output = "Sorry. I did not find any results"
+
+        reprompt_text = None
+    else:
+        speech_output = "I wasn't able to get that. You can tell me to search for a show by saying. " \
+                        "when does The Walking Dead air next?"
+        reprompt_text = "You can tell me to search for a show by saying. when does The Walking Dead air next?"
+    return build_response(session_attributes, build_speechlet_response(
+            card_title, add_sml_tag(speech_output), reprompt_text, should_end_session))
+def get_welcome_response():
+    """ If we wanted to initialize the session to have some attributes we could
+    add those here
+    """
+
+    session_attributes = {}
+    card_title = "Welcome"
+    speech_output = "Hello, I am couch potato. I can search for a show and tell you when it will air next. I can also " \
+                    "recommend similar shows. " \
+                    "and save your favorite shows and give you updates"
+    # If the user either does not reply to the welcome message or says something
+    # that is not understood, they will be prompted again with this text.
+    reprompt_text = "Please tell me your favorite color by saying, " \
+                    "my favorite color is red."
+    should_end_session = False
+    return build_response(session_attributes, build_speechlet_response(
+            card_title, add_sml_tag(speech_output), reprompt_text, should_end_session))
+def get_shows_for_date(intent, session):
+    card_title = intent['name']
+    session_attributes = {}
+    should_end_session = False
+    print(intent['slots'])
+    if 'ShowForDate' in intent['slots']:
+        ## get date
+        date = intent['slots']['ShowForDate']['value']
+        print(date)
+
+        ## get shows
+        request_helper = HttpHelper.HttpHelper()
+        request_helper.add_urls([Enums.API_URLS["shows_for_date"].format(date)])
+        request_helper.start_minions(request_helper.get_tv_shows)
+        shows = request_helper.shows
+        add_shows_to_session(shows)
+        show_count = len(shows)
+
+        ##more than one show found
+        if show_count > 0:
+            #session_attributes = add_shows_to_session(shows)
+            text = "<p>I found {} tv shows matching playing on {}.</p> ".format(show_count, date) + \
+                            "<p>You can filter your choices any time by saying Alexa, shows only on HBO</p> <p>or if you want" \
+                            " more information on a specific show just say Alexa, more info on Grey's Anatomy</p>  <p>Here " \
+                            "are the shows:</p> {}"
+            speech_output = text.format(get_list_for_shows_text(shows,len(text)))
+        else:
+            speech_output = "Sorry. I did not find any results"
+
+        reprompt_text = None
+    else:
+        text = "I wasn't able to get that. You can tell me to search for a show on any given date by saying. " \
+                        "What shows or on December 10, 2015? or saying What shows are on Today?"
+        speech_output = text
+        reprompt_text = text
+    print(speech_output)
+    return build_response(session_attributes, build_speechlet_response(
+            card_title, add_sml_tag(speech_output), reprompt_text, should_end_session))
 
 
-# --------------- Helpers that build all of the responses ----------------------
+def get_list_for_shows_text(shows, char_count, filter = None):
+
+    if filter is not None:
+        shows = filter(lambda x: x.network["name"] == filter, shows)
+
+    prev_time = shows[0].get_current_episode_time()
+    text = "<p>Shows starting at {}</p>".format(prev_time)
+    char_count += len(text)
+    for index, show in enumerate(shows):
+        print("{}: {}".format(char_count, show.name))
+        if char_count > 6000:
+            last_index = index
+            break
+        current_time = show.get_current_episode_time()
+        char_count += len(text)
+        #
+        if prev_time.replace(" ","") != current_time.replace(" ",""):
+            text += "<p>Shows starting at {} are: {} on {} </p>".format(current_time,
+                                                                        fix_string(show.name),
+                                                                        fix_string(show.network["name"]))
+            prev_time = current_time
+
+        else:
+            text += "<p>Playing on {}  is {}</p> ".format(fix_string(show.network["name"]), fix_string(show.name))
+    return text
+############## end intent handlers
+
+def fix_string(text):
+    return text.encode('utf-8').strip().replace("&"," and " )
+
+#  --------------- Helpers that build all of the responses ----------------------
 
 
 def build_speechlet_response(title, output, reprompt_text, should_end_session):
     return {
         'outputSpeech': {
-            'type': 'PlainText',
-            'text': output
+            'type': 'SSML',
+            'ssml': output
         },
         'card': {
             'type': 'Simple',

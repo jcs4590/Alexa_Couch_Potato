@@ -1,10 +1,7 @@
 import requests
-import xml.etree.ElementTree as ET
-from threading import Thread
-import time
+import threading
 import Queue
-import urlparse
-from TvShow import TvShow
+import TvShow
 import json
 SHOWS_WITH_NUMBERS = \
     {
@@ -76,48 +73,64 @@ class HttpHelper:
     #         self.setup_urls()
     def add_urls(self, urls):
         for url in urls:
+            b = 1
             self.que.put(url)
-        self.start_minions()
 
     def get_tv_shows(self):
         while not self.que.empty():
             url = self.que.get()
-            r = requests.get(url)
+            r = requests.get(url, timeout=10)
             if r.status_code == 200:
                 self.shows = self.get_shows_objects(json.loads(r.text))
                 self.que.task_done()
-    def get_next_episode(self, url):
+
+    ##############################################################################
+
+    def get_tv_shows_for_date(self):
+            while not self.que.empty():
+                url = self.que.get()
+                r = requests.get(url, timeout=10)
+                if r.status_code == 200:
+                    self.shows = self.get_shows_objects(json.loads(r.text))
+                    self.que.task_done()
+
+
+
+#################################################
+    def get_episode(self, url):
         r = requests.get(url)
         if r.status_code == 200:
             return json.loads(r.text)
         return None
 
-    def shows(self):
-        return self.shows
+
+    def get_shows_objects_from_session(self, results):
+        shows = []
+        for json_show in results:
+            show = TvShow.TvShow().json_to_object(json_show)
+            shows.append(show)
+        return shows
+
     def get_shows_objects(self, results):
         shows = []
-        for item in results:
-            json_show = item
-            show = TvShow().json_to_object(json_show["show"])
+        for json_show in results:
+            show = TvShow.TvShow().json_to_object(json_show)
             shows.append(show)
         return shows
 
 
-    def start_minions(self):
+    def start_minions(self,target):
         for i in range(5):
-            thread = Thread(target=self.get_tv_shows)
+            thread = threading.Thread(target=target)
             thread.start()
         self.que.join()
 
 
         # start = time.clock()
 
+#
 
-helper = HttpHelper()
-helper.add_urls(["http://api.tvmaze.com/search/shows?q=girl"])
-helper.start_minions()
-for show in helper.shows:
-    print(show)
+
 
 
 #print helper.shows

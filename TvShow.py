@@ -3,11 +3,12 @@ import HttpHelper
 import datetime
 import dateutil.parser
 
-DATE_PARSER = "%A %B %d %Y"
-TIME_PARSER = "%I %M %p"
+DATE_PARSER = "%A %B %-d %Y"
+TIME_PARSER = "%-I %M %p"
+TIME_PARSER = "%-I %M %p"
+PARSER = dateutil.parser
 
-
-class TvShow(object):
+class TvShow:
     def __init__(self):
         self.id = "Unknown"
         self.name = "Unknown"
@@ -30,21 +31,45 @@ class TvShow(object):
         self._links = "Unknown"
         self.next_episode = None
         self.prev_episode = None
-        self.parser = dateutil.parser
+        self.airstamp = "Unknown"
+        self.season = "Unknown"
+        self.number = "Unknown"
+        self.airdate = "Unknown"
+        self.airtime = "airtime"
 
-    def json_to_object(self, show):
+
+    @staticmethod
+    def json_to_object(show):
         tv_show = TvShow()
-        for key, item in show.items():
-            setattr(tv_show, key, item)
+        #run through inner show content first
+        for show_key, item in show["show"].items():
+            setattr(tv_show, show_key, item)
+
+        for outer_key, outer_item in show.items():
+            if outer_key == "show":
+                continue
+            else:
+                if(getattr(tv_show, outer_key) == "Unknown"):
+                    setattr(tv_show, outer_key, outer_item)
+
         return tv_show
+
+    def get_current_episode_date(self):
+        date = PARSER.parse(self.airstamp)
+        return  "{} at {}".format(date.strftime(DATE_PARSER),
+                                  date.strftime(TIME_PARSER).replace("00",""))
+    def get_current_episode_time(self):
+        date = PARSER.parse(self.airstamp)
+        return  "{}".format(date.strftime(TIME_PARSER).replace("00",""))
+
 
     def get_next_episode_date(self):
         if self.next_episode is None:
             if "nextepisode" in self._links:
-                helper = HttpHelper()
-                self.next_episode = helper.get_next_episode(self._links["nextepisode"]["href"])
-                date = self.parser.parse(self.next_episode["airstamp"])
-                date = "{} at {}".format(date.strftime(DATE_PARSER), date.strftime(TIME_PARSER))
+                helper = HttpHelper.HttpHelper()
+                self.next_episode = helper.get_episode(self._links["nextepisode"]["href"])
+                date = PARSER.parse(self.next_episode["airstamp"])
+                date = "{} at {}".format(date.strftime(DATE_PARSER), date.strftime(TIME_PARSER).replace("00",""))
                 return date
             else:
                 None
@@ -52,10 +77,10 @@ class TvShow(object):
     def get_prev_episode_date(self):
         if self.prev_episode is None:
             if "previousepisode" in self._links:
-                helper = HttpHelper()
-                self.next_episode = helper.get_next_episode(self._links["previousepisode"]["href"])
-                date = self.parser.parse(self.prev_episode["airstamp"])
-                date = "{} at {}".format(date.strftime(DATE_PARSER), date.strftime(TIME_PARSER))
+                helper = HttpHelper.HttpHelper()
+                self.prev_episode = helper.get_episode(self._links["previousepisode"]["href"])
+                date = PARSER.parse(self.prev_episode["airstamp"])
+                date = "{} at {}".format(date.strftime(DATE_PARSER), date.strftime(TIME_PARSER).replace("00",""))
                 return date
             else:
                 None
