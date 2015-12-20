@@ -5,8 +5,7 @@ import time
 import Queue
 import urlparse
 from TvShow import TvShow
-from xmlToJson import json2xml
-
+import json
 SHOWS_WITH_NUMBERS = \
     {
         "the hundred": "The 100",
@@ -58,29 +57,25 @@ class HttpHelper:
 
     def __init__(self):
         self.running = True
-        self.result_shows = {}
+        self.shows = []
         self.que = Queue.LifoQueue()
 
-    def get_tv_show_ids(self, tv_show_name):
-        url = "http://next-episode.net/api/iphone/v351/services.php?service=search&query={}".format(tv_show_name) + \
-              "&user_id={}&hash_key={}&time=-21600&myshows=0&offset=0&calendardays=0".format(self.USER_ID,
-                                                                                             self.HASH_KEY)
-        print("VEGAS!! -- {}".format(url))
-        r = requests.get(url)
-
-        # successful request
-        if r.status_code == 200:
-            root = ET.fromstring(r.text)
-            # get show ids
-            for child in root.iter("showid"):
-                self.result_shows[child.text] = None
-            self.setup_urls()
-
-    def setup_urls(self):
-        for show_id in self.result_shows.keys():
-            url = "http://next-episode.net/api/iphone/v351/services.php?service=overview&show_id={}".format(show_id) + \
-                  "&user_id={}&hash_key={}&tier=1".format(self.USER_ID, self.HASH_KEY) + \
-                  "&hourformat=1"
+    # def get_tv_show_ids(self, tv_show_name):
+    #     url = "http://next-episode.net/api/iphone/v351/services.php?service=search&query={}".format(tv_show_name) + \
+    #           "&user_id={}&hash_key={}&time=-21600&myshows=0&offset=0&calendardays=0".format(self.USER_ID,
+    #                                                                                          self.HASH_KEY)
+    #     print("VEGAS!! -- {}".format(url))
+    #     r = requests.get(url)
+    #
+    #     # successful request
+    #     if r.status_code == 200:
+    #         root = ET.fromstring(r.text)
+    #         # get show ids
+    #         for child in root.iter("showid"):
+    #             self.shows[child.text] = None
+    #         self.setup_urls()
+    def add_urls(self, urls):
+        for url in urls:
             self.que.put(url)
         self.start_minions()
 
@@ -89,30 +84,24 @@ class HttpHelper:
             url = self.que.get()
             r = requests.get(url)
             if r.status_code == 200:
-                parsed = urlparse.urlparse(url)
-                self.add_show(r.text, urlparse.parse_qs(parsed.query)['show_id'][0])
-            self.que.task_done()
+                self.shows = self.get_shows_objects(json.loads(r.text))
+                self.que.task_done()
+    def get_next_episode(self, url):
+        r = requests.get(url)
+        if r.status_code == 200:
+            return json.loads(r.text)
+        return None
 
-    def add_show(self, show_content, show_id):
-        root = ET.fromstring(show_content)
-        try:
+    def shows(self):
+        return self.shows
+    def get_shows_objects(self, results):
+        shows = []
+        for item in results:
+            json_show = item
+            show = TvShow().json_to_object(json_show["show"])
+            shows.append(show)
+        return shows
 
-            tvshow = TvShow(root.find("title").text,
-                            root.find("genre").text,
-                            root.find("creators").text,
-                            root.find("channel").text,
-                            root.find("show_status").text,
-                            root.find("premiered").text,
-                            root.find("nextEpisode").find("air_date").text,
-                            root.find("nextEpisode").find("episode_name").text,
-                            root.find("nextEpisode").find("countdown").text,
-                            root.find("nextEpisode").find("season_number").text,
-                            root.find("prevEpisode").find("air_date").text,
-                            root.find("prevEpisode").find("season_number").text,
-                            root.find("active").text)
-            self.result_shows[str(show_id)] = tvshow
-        except AttributeError:
-            self.result_shows = {}
 
     def start_minions(self):
         for i in range(5):
@@ -124,9 +113,18 @@ class HttpHelper:
         # start = time.clock()
 
 
-        # helper = HttpHelper()
-        # helper.get_tv_show_ids("Empire")
-        # end = time.clock()
-        # print "Total time = {}".format(end - start)
+helper = HttpHelper()
+helper.add_urls(["http://api.tvmaze.com/search/shows?q=girl"])
+helper.start_minions()
+for show in helper.shows:
+    print(show)
 
-        # print helper.result_shows
+
+#print helper.shows
+# r = requests.get("http://api.tvmaze.com/search/shows?q=2%20broke%20girls")
+# if r.status_code == 200:
+#     blah = json.loads(r.text)[0]["show"]
+#     #print blah
+#     show = TvShow().json_to_object(blah)
+#     print show.image
+

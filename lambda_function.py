@@ -10,6 +10,7 @@ http://amzn.to/1LGWsLG
 from __future__ import print_function
 from HttpHelper import HttpHelper, TvShow
 import json, re
+API_URLS = {"show_search":"http://api.tvmaze.com/search/shows?q={}"}
 
 SHOWS_WITH_NUMBERS = \
     {
@@ -166,24 +167,30 @@ def get_tv_show(intent, session):
     should_end_session = False
     print(intent['slots'])
     if 'Show' in intent['slots']:
+        ## get tv show name
         tv_show = intent['slots']['Show']['value']
+
+        ## check if tv show is one that has numbers in it
         if tv_show in SHOWS_WITH_NUMBERS:
             tv_show = SHOWS_WITH_NUMBERS[tv_show]
-            print(tv_show)
 
+        ## get shows
         request_helper = HttpHelper()
-        request_helper.get_tv_show_ids(tv_show)
+        request_helper.add_urls(API_URLS["show_search"].format(tv_show))
         print(tv_show)
-        show_count = len(request_helper.result_shows)
+        shows = request_helper.shows
+        show_count = len(shows)
 
+        ##more than one show found
         if show_count > 1:
-            session_attributes = add_shows_to_session(request_helper.result_shows)
+            session_attributes = add_shows_to_session(shows)
             speech_output = "I found {} episodes matching the title {}. ".format(show_count, tv_show) + \
                             "What network is the show on?"
-
+        ##one show found
         elif show_count == 1:
-            show = request_helper.result_shows.values()[0]
+            show = shows[0]
             speech_output = get_next_air_text(show)
+        ## no show found
         else:
             speech_output = "Sorry. I did not find any results"
 
@@ -196,44 +203,35 @@ def get_tv_show(intent, session):
         card_title, speech_output, reprompt_text, should_end_session))
 
 
-def get_next_air_text(show):
-    date = fix_date(show.next_episode_date)
+def get_next_episode_date_text(show):
+    date = show.get_next_episode_date()
     if date is None:
-        if show.active == "0":
-            date = fix_date(show.previous_episode_date)
+        if show.status.lower() == "ended":
+            date = show.get_prev_episode_date()
             if date is None:
-                speech_output = "The TV Show {} has ended. " \
-                                "It lasted {} seasons.".format(fix_title(show.title),
-                                                               show.seasons_lasted)
+                speech_output = "The tv show {} is no longer running".format(show.name)
             else:
-                speech_output = "The TV Show {} has ended. " \
+                speech_output = "The TV Show {} is no longer running. " \
                                 "It lasted {} seasons and The last " \
-                                "episode aired on {}".format(fix_title(show.title),
-                                                             show.seasons_lasted,
+                                "episode aired on {}".format(show.name,
+                                                             show.prev_episode["season"],
                                                              date)
         else:
             speech_output = "I do not have a date for the next {} episode. but, I do know it" \
-                            " is still active.".format(fix_title(show.title))
+                            " is still active.".format(show.name)
         return speech_output
-    return "The new episode of {} will air on {} on {}".format(fix_title(show.title), date, show.network.replace("at 0:00 am", ""))
+    return "The new episode of {} will air on {} on {}".format(show.name, date, show.network["name"])
 
 
 def add_shows_to_session(shows):
-    return {"shows": json.dumps(shows, default=lambda o: o.__dict__, sort_keys=True, indent=4)}
+    #json.dumps(shows, default=lambda o: o.__dict__, sort_keys=True, indent=4)
+    return {"shows": shows}
 
 
-def fix_date(date):
-    if date == "Wed Dec 31, 1969":
-        return None
-    parts = date.replace(",", "").split()
-    months = {"Jan": "January", "Feb": "February", "Mar": "March", "Apr": "April",
-              "May": "May", "June": "June", "July": "July", "Aug": "August", "Sep": "September",
-              "Oct": "October", "Nov": "November", "Dec": "December"}
-    days = {"Mon": "Monday", "Tue": "Tuesday", "Wed": "Wednesday", "Thu": "Thursday", "Fri": "Friday",
-            "Sat": "Saturday", "Sun": "Sunday"}
-    return "{} {} {}, {}".format(days[parts[0]], months[parts[1]], parts[2].lstrip("0"), parts[3])
-def fix_title(title):
-    return re.sub(r'\([^)]*\)', '', title)
+
+
+### MEthod gets called when multiple shows found#####
+## TRYing to filter by network #####
 
 def search_network(intent, session):
     session_attributes = {}
@@ -243,38 +241,18 @@ def search_network(intent, session):
     if "network" in intent["slots"]:
         print("network in intents slots : {}".format(intent["slots"]))
         network = intent["slots"]["network"]["value"]
-        print(json.loads(session['attributes']['shows']))
+       # print(json.loads(session['attributes']['shows']))
+
+        ##get shows from session
         if "shows" in session.get("attributes", {}):
-            shows = json.loads(session['attributes']['shows'])
+            shows = HttpHelper.get_shows_objects(json.loads(session['attributes']['shows'])) ##show objects
             print("LAkers!! {}".format(network))
             for show in shows:
-                if network.decode('utf-8').replace(".", "").lower() in shows[show]["network"].lower():
-                    match = shows[show]
-                    date = fix_date(match["next_episode_date"])
-                    if date is None:
-                        if match["active"] == "0":
-                            date = fix_date(match["previous_episode_date"])
-                            if date is None:
-                                speech_output = "The TV Show {} has ended. " \
-                                                "It lasted {} seasons.".format(fix_title(match["title"]),
-                                                                               match["seasons_lasted"])
-                            else:
-                                speech_output = "The TV Show {} has ended. " \
-                                                "It lasted {} seasons and The last " \
-                                                "episode aired on {}".format(fix_title(match["title"]),
-                                                                             match["seasons_lasted"],
-                                                                             date)
-                        else:
-                            speech_output = "I do not have a date for the next {} episode. " \
-                                            "but, I do know it is still active.".format(fix_title(match["title"]))
-                    else:
-                        speech_output = "The new episode of {} will air on {} on {}".format(fix_title(match["title"]),
-                                                                                            date,
-                                                                                            match["network"].
-                                                                                            replace("at 0:00 am", ""))
+                if network.decode('utf-8').replace(".", "").lower() in show.network["name"].lower():
+                    speech_output = get_next_episode_date_text(show)
                     break
                 else:
-                    speech_output = "not found what!!!!"
+                    speech_output = "No tv show was found for the network {}.".format(network)
 
         else:
             speech_output = "Having session issues. Sorry!"
