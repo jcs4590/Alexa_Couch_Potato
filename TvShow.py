@@ -35,17 +35,20 @@ class TvShow:
         self.season = "Unknown"
         self.number = "Unknown"
         self.airdate = "Unknown"
-        self.airtime = "airtime"
+        self.airtime = "Unknown"
+        self.score = "Unknown"
 
 
     @staticmethod
     def json_to_object(show):
         tv_show = TvShow()
         #run through inner show content first
-        for show_key, item in show["show"].items():
-            setattr(tv_show, show_key, item)
+        if "show" in show:
+            for show_key, item in show["show"].items():
+                setattr(tv_show, show_key, item)
 
         for outer_key, outer_item in show.items():
+            print outer_key, outer_item
             if outer_key == "show":
                 continue
             else:
@@ -55,6 +58,7 @@ class TvShow:
         return tv_show
 
     def get_current_episode_date(self):
+        print self.airstamp
         date = PARSER.parse(self.airstamp)
         return  "{} at {}".format(date.strftime(DATE_PARSER),
                                   date.strftime(TIME_PARSER).replace("00",""))

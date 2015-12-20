@@ -170,7 +170,7 @@ def get_tv_show(intent, session):
     session_attributes = {}
     should_end_session = False
     print(intent['slots'])
-    if 'Show' in intent['slots']:
+    if 'value' in intent['slots']["Show"]:
         ## get tv show name
         tv_show = intent['slots']['Show']['value']
 
