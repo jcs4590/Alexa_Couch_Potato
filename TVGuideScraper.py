@@ -70,7 +70,7 @@ def insert_to_db(json):
                 channel = ListingChannel.json_to_object(item)
                 last_channel = channel.SourceId
                 cur.callproc("AddChannel", [channel.Name, channel.Sort, channel.NetworkId, channel.FullName,
-                                            channel.FilterNumber, channel.SourceId])
+                                            channel.FilterNumber, channel.SourceId, 76967])
             if key == "ProgramSchedules":
                 PROGRAMS_INSERTED += len(item)
                 for goods in item:
