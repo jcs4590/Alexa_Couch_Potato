@@ -24,6 +24,6 @@ cur = conn.cursor()
 
 # def insert_into
 
-cur.execute('SELECT * from GetPrograms()')
-ver = cur.fetchone()
-print ver[0]
+# cur.execute('SELECT * from GetPrograms()')
+# ver = cur.fetchone()
+# print ver[0]

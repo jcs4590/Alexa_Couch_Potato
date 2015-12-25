@@ -1,4 +1,4 @@
-NextAirDate when does {transparent|Show} air next
+NextAirDate when does {one|Show} air next
 NextAirDate when does {the hundred|Show} air next
 NextAirDate when does {the two three|Show} air next
 NextAirDate when does {one two three four|Show} air next
@@ -57,13 +57,13 @@ NextAirDate when is the next {one two three four five six seven eight nine|Show}
 NextAirDate when is the next {one two three four five six seven eight nine ten|Show}
 
 
-ShowsOnDate what shows are on {ShowsForDate}
-ShowsOnDate what is playing  {ShowsForDate}
-ShowsOnDate what is playing on {ShowsForDate}
-ShowsOnDate what shows are playing {ShowsForDate}
-ShowsOnDate what shows are playing on {ShowsForDate}
-ShowsOnDate what show are available {ShowsForDate}
-ShowsOnDate what show are available on {ShowsForDate}
+ShowsOnDate what shows are on {ShowForDate}
+ShowsOnDate what is playing  {ShowForDate}
+ShowsOnDate what is playing on {ShowForDate}
+ShowsOnDate what shows are playing {ShowForDate}
+ShowsOnDate what shows are playing on {ShowForDate}
+ShowsOnDate what show are available {ShowForDate}
+ShowsOnDate what show are available on {ShowForDate}
 
 
 FilterAllSHows filter by {fox|Filter}
@@ -77,6 +77,9 @@ TvShowNetwork {amc|network}
 
 
 
+
+
+
 {
   "intents": [
 
@@ -85,7 +88,7 @@ TvShowNetwork {amc|network}
       "slots": [
         {
           "name": "Show",
-          "type": "LITERAL"
+          "type": "AMAZON.LITERAL"
         }
       ]
     },
@@ -104,11 +107,21 @@ TvShowNetwork {amc|network}
       "slots": [
         {
           "name": "ShowForDate",
-          "type": "AMAZON.DATE"
+          "type": "DATE"
+        }
+
+      ]
+    }
+    ,
+     {
+      "intent": "FilterAllSHows",
+      "slots": [
+        {
+          "name": "Filter",
+          "type": "AMAZON.LITERAL"
         }
 
       ]
     }
   ]
 }
-

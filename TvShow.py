@@ -48,7 +48,6 @@ class TvShow:
                 setattr(tv_show, show_key, item)
 
         for outer_key, outer_item in show.items():
-            print outer_key, outer_item
             if outer_key == "show":
                 continue
             else:
@@ -58,7 +57,6 @@ class TvShow:
         return tv_show
 
     def get_current_episode_date(self):
-        print self.airstamp
         date = PARSER.parse(self.airstamp)
         return "{} at {}".format(date.strftime(DATE_PARSER),
                                  date.strftime(TIME_PARSER).replace("00", ""))
@@ -66,6 +64,14 @@ class TvShow:
     def get_current_episode_time(self):
         date = PARSER.parse(self.airstamp)
         return "{}".format(date.strftime(TIME_PARSER).replace("00", ""))
+
+    def is_network_match(self, netowrk):
+        if self.network is not None:
+            return netowrk.decode('utf-8').replace(".", "").lower() in self.network["name"].lower()
+        elif self.webChannel is not None:
+            return netowrk.decode('utf-8').replace(".", "").lower() in self.webChannel["name"].lower()
+        else:
+            return False
 
     def get_next_episode_date(self):
         if self.next_episode is None:

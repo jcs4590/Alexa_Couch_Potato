@@ -102,7 +102,7 @@ def insert_to_db(json):
 ##to epoch
 # (datetime(2015, 12, 21, 5, 30) - datetime(1970,1,1)).total_seconds()
 
-dates = get_epochs_for_days(0)
+dates = get_epochs_for_days(3)
 for date in dates:
     get_guide_for_start_date(date)
 DBHelper.conn.close()

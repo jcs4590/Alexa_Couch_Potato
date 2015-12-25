@@ -1,6 +1,7 @@
 import HttpHelper
-helper = HttpHelper.HttpHelper()
-helper.add_urls(["http://api.tvmaze.com/search/shows?q=empire"])
-helper.start_minions(helper.get_tv_shows)
-for show in helper.shows:
-    print("<p>Playing on {} at {} is {}</p> ".format(show.network["name"], show.name))
+import  Enums
+request_helper = HttpHelper.HttpHelper()
+request_helper.add_urls([Enums.API_URLS["show_search"].format("transparent")])
+request_helper.start_minions(request_helper.get_tv_shows)
+print(request_helper.shows)
+shows = request_helper.shows

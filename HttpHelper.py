@@ -90,11 +90,3 @@ class HttpHelper:
 
 
 
-#print helper.shows
-# r = requests.get("http://api.tvmaze.com/search/shows?q=2%20broke%20girls")
-# if r.status_code == 200:
-#     blah = json.loads(r.text)[0]["show"]
-#     #print blah
-#     show = TvShow().json_to_object(blah)
-#     print show.image
-
