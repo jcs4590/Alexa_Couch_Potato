@@ -65,35 +65,35 @@ def insert_to_db(json):
         spaces = '-' * (50 - len(hashes))
         sys.stdout.write("\rPercent: [{0}] {1}%".format(hashes + spaces, int(percent * 100)))
         sys.stdout.flush()
-        for key, item in section.items():
-            if key == "Channel":
-                channel = ListingChannel.json_to_object(item)
-                last_channel = channel.SourceId
-                cur.callproc("AddChannel", [channel.Name, channel.Sort, channel.NetworkId, channel.FullName,
-                                            channel.FilterNumber, channel.SourceId, 76967])
-            if key == "ProgramSchedules":
-                PROGRAMS_INSERTED += len(item)
-                for goods in item:
-                    program = TvProgram.json_to_object(goods)
+        item = section["Channel"]
+        channel = ListingChannel.json_to_object(item)
+        last_channel = channel.SourceId
+        cur.callproc("AddChannel", [channel.Name, channel.Sort, channel.NetworkId, channel.FullName,
+                                    channel.FilterNumber, channel.SourceId, 76967])
 
-                    cur.callproc("AddProgram", [program.AiringAttrb,
-                                                program.CatId,
-                                                datetime.datetime.fromtimestamp(program.EndTime),
-                                                program.ProgramId, datetime.datetime.fromtimestamp(program.StartTime),
-                                                program.TVObjectId,
-                                                program.TVObjectTypeId,
-                                                program.Title,
-                                                program.Rating,
-                                                program.EpisodeTitle,
-                                                program.AiringAttrib,
-                                                int(program.IsSportsEvent),
-                                                program.SubCatId,
-                                                program.SubCatFilterNum,
-                                                program.ParentProgramId,
-                                                program.CatFilterNum,
-                                                program.CopyText,
-                                                last_channel])
-                    DBHelper.conn.commit()
+        item = section["ProgramSchedules"]
+        PROGRAMS_INSERTED += len(item)
+        for goods in item:
+            program = TvProgram.json_to_object(goods)
+
+            cur.callproc("AddProgram", [program.AiringAttrb,
+                                        program.CatId,
+                                        datetime.datetime.fromtimestamp(program.EndTime),
+                                        program.ProgramId, datetime.datetime.fromtimestamp(program.StartTime),
+                                        program.TVObjectId,
+                                        program.TVObjectTypeId,
+                                        program.Title,
+                                        program.Rating,
+                                        program.EpisodeTitle,
+                                        program.AiringAttrib,
+                                        int(program.IsSportsEvent),
+                                        program.SubCatId,
+                                        program.SubCatFilterNum,
+                                        program.ParentProgramId,
+                                        program.CatFilterNum,
+                                        program.CopyText,
+                                        last_channel])
+            DBHelper.conn.commit()
 
     cur.close()
     print("\n\n ************* Results ************* \n Channels: {} \n Programs: {}\n".format(CHANNELS_INSERTED,

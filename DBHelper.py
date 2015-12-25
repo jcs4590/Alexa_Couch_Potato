@@ -14,7 +14,7 @@ conn = psycopg2.connect(
 )
 
 #
-# cur = conn.cursor()
+cur = conn.cursor()
 #
 #
 # cur.callproc("AddProgram", [None, None, 3, 4, 5, 6, 5, "dddd",None, "sssaaaaa", 5, 1,6,4,7, 6, unicode("vgg"),33333])
@@ -23,3 +23,7 @@ conn = psycopg2.connect(
 # conn.close()
 
 # def insert_into
+
+cur.execute('SELECT * from GetPrograms()')
+ver = cur.fetchone()
+print ver[0]

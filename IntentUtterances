@@ -1,5 +1,5 @@
-NextAirDate when does {one|Show} air next
-NextAirDate when does {one two|Show} air next
+NextAirDate when does {transparent|Show} air next
+NextAirDate when does {the hundred|Show} air next
 NextAirDate when does {the two three|Show} air next
 NextAirDate when does {one two three four|Show} air next
 NextAirDate when does {one two three four five|Show} air next
@@ -10,8 +10,8 @@ NextAirDate when does {one two three four five six seven eight nine|Show} air ne
 NextAirDate when does {one two three four five six seven eight nine ten|Show} air next
 
 
-
 NextAirDate when is {one|Show} on
+NextAirDate when is {the hundred|Show} on
 NextAirDate when is {one two|Show} on
 NextAirDate when is {one two three|Show} on
 NextAirDate when is {one two three four|Show} on
@@ -24,7 +24,7 @@ NextAirDate when is {one two three four five six seven eight nine ten|Show} on
 
 
 NextAirDate when is the new {one|Show} episode
-NextAirDate when is the new {one two|Show} episode
+NextAirDate when is the new {the hundred|Show} episode
 NextAirDate when is the new {one two three|Show} episode
 NextAirDate when is the new {one two three four|Show} episode
 NextAirDate when is the new {one two three four five|Show} episode
@@ -35,7 +35,7 @@ NextAirDate when is the new {one two three four five six seven eight nine|Show} 
 NextAirDate when is the new {one two three four five six seven eight nine ten|Show} episode
 
 NextAirDate when is the new episode of {one|Show}
-NextAirDate when is the new episode of {one two|Show}
+NextAirDate when is the new episode of {the hundred|Show}
 NextAirDate when is the new episode of {one two three|Show}
 NextAirDate when is the new episode of {one two three four|Show}
 NextAirDate when is the new episode of {one two three four five|Show}
@@ -46,7 +46,7 @@ NextAirDate when is the new episode of {one two three four five six seven eight 
 NextAirDate when is the new episode of {one two three four five six seven eight nine ten|Show}
 
 NextAirDate when is the next {one|Show}
-NextAirDate when is the next {one two|Show}
+NextAirDate when is the next {the hundred|Show}
 NextAirDate when is the next {one two three|Show}
 NextAirDate when is the next {one two three four|Show}
 NextAirDate when is the next {one two three four five|Show}
@@ -57,16 +57,16 @@ NextAirDate when is the next {one two three four five six seven eight nine|Show}
 NextAirDate when is the next {one two three four five six seven eight nine ten|Show}
 
 
+ShowsOnDate what shows are on {ShowsForDate}
+ShowsOnDate what is playing  {ShowsForDate}
+ShowsOnDate what is playing on {ShowsForDate}
+ShowsOnDate what shows are playing {ShowsForDate}
+ShowsOnDate what shows are playing on {ShowsForDate}
+ShowsOnDate what show are available {ShowsForDate}
+ShowsOnDate what show are available on {ShowsForDate}
 
-ShowsOnDate what shows are on {ShowForDate}
-ShowsOnDate what is playing  {ShowForDate}
-ShowsOnDate what is playing on {ShowForDate}
-ShowsOnDate what shows are playing {ShowForDate}
-ShowsOnDate what shows are playing on {ShowForDate}
-ShowsOnDate what show are available {ShowForDate}
-ShowsOnDate what show are available on {ShowForDate}
 
-
+FilterAllSHows filter by {fox|Filter}
 
 
 TvShowNetwork The tv show is on {FOX|network}
@@ -74,8 +74,6 @@ TvShowNetwork it is on {FOX|network}
 TvShowNetwork {FOX|network}
 TvShowNetwork {A.M.C|network}
 TvShowNetwork {amc|network}
-
-
 
 
 
@@ -113,3 +111,4 @@ TvShowNetwork {amc|network}
     }
   ]
 }
+

@@ -1,0 +1,32 @@
+NextAirDate when does {transparent|Show} air next
+
+
+NextAirDate when is {one|Show} on
+
+
+
+NextAirDate when is the new {one|Show} episode
+
+
+NextAirDate when is the new episode of {one|Show}
+
+NextAirDate when is the next {one|Show}
+
+
+ShowsOnDate what shows are on {ShowsForDate}
+ShowsOnDate what is playing  {ShowsForDate}
+ShowsOnDate what is playing on {ShowsForDate}
+ShowsOnDate what shows are playing {ShowsForDate}
+ShowsOnDate what shows are playing on {ShowsForDate}
+ShowsOnDate what show are available {ShowsForDate}
+ShowsOnDate what show are available on {ShowsForDate}
+
+
+FilterAllSHows filter by {fox|Filter}
+
+
+TvShowNetwork The tv show is on {FOX|network}
+TvShowNetwork it is on {FOX|network}
+TvShowNetwork {FOX|network}
+TvShowNetwork {A.M.C|network}
+TvShowNetwork {amc|network}
