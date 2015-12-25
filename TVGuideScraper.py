@@ -26,7 +26,8 @@ UTC_TIMES = {"3pm": 21, "11pm":5, "7am":13}
 
 
 def get_guide_for_start_date(start_date):
-    r = requests.get(TV_GUIDE_URLS["shows_for_start_date"].format(76967, start_date))
+    headers = {"User-Agent": "TVGuide/5.0 iOS/9.0.2 Manufacturer/Apple Device/iPhone8,2 Interface/Phone"}
+    r = requests.get(TV_GUIDE_URLS["shows_for_start_date"].format(76967, start_date), headers=headers)
     if r.status_code == 200:
         insert_to_db(json.loads(r.text))
 def get_epochs_for_days(days):
