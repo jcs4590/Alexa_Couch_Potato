@@ -76,6 +76,8 @@ def insert_to_db(json):
         PROGRAMS_INSERTED += len(item)
         for goods in item:
             program = TvProgram.json_to_object(goods)
+            if program.IsSportsEvent is None:
+                program.IsSportsEvent = 0
 
             cur.callproc("AddProgram", [program.AiringAttrb,
                                         program.CatId,
